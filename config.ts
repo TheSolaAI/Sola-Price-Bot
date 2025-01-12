@@ -9,4 +9,5 @@ export const config = {
     MCAP_ID: process.env.mcap_id,
     HELIUS_KEY: process.env.helius_key,
     DEFINED_KEY: process.env.defined_key,
+    DATA_SERVICE_URL: process.env.data_service_url,
 }

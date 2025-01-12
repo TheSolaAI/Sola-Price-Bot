@@ -32,29 +32,28 @@ let headers = {
         "Authorization": config.DEFINED_KEY
       }
 
-async function price_channel(price: number) { 
-    try {
-        let id = config.PRICE_ID
-        if (!id) { 
-            console.error("Price ID not found!");
-            return;
-        }
-        const channel = await client.channels.fetch(id.toString());
-        
-        if (!channel) {
-            console.error("Channel not found!");
-            return;
-        }
-        if (channel instanceof VoiceChannel) {
-            
-            const newChannel = await channel.setName(`Price: $${price.toFixed(2)}`);
-            console.log(`The channel's new name is: ${newChannel.name}`);
-        } else {
-            console.error("The channel is not a voice channel.");
-        }
-    } catch (error) {
-        console.error("Error updating channel name:", error);
+async function volume_channel(volume: number) { 
+  try {
+
+    let id = config.PRICE_ID;
+    if (!id) { 
+        console.error("Price ID not found!");
+        return;
     }
+    const channel = await client.channels.fetch(id.toString());
+    if (!channel) {
+        console.error("Channel not found!");
+        return;
+    }
+    if (channel instanceof VoiceChannel) {
+        const newChannel = await channel.setName(`24hr Vol: $${formatNumber(volume)}`);
+        console.log(`The channel's new name is: ${newChannel.name}`);
+    } else {
+        console.error("The channel is not a voice channel.");
+    }
+} catch (error) {
+    console.error("Error updating channel name:", error);
+}
 }
 
 async function holders_channel(holders:number) { 
@@ -117,7 +116,12 @@ function formatNumber(num:number) {
 }
 
 export const bot = async () => {
-    async function setChannels() {
+  async function setChannels() {
+    let data_url = config.DATA_SERVICE_URL
+    if (!data_url) {
+      console.error("Data service URL not found!");
+      return;
+    }
     
     try {
         axios.post(
@@ -129,11 +133,21 @@ export const bot = async () => {
           }
         ).then(async (response) => {
             let price = response.data.data.getTokenPrices[0]["priceUsd"];
-            price_channel(price);
             mcap_channel(price * 1000000000);
           });
         const holders = findHolders();
-        holders_channel(await holders);
+      holders_channel(await holders);
+      
+        axios.post(
+          data_url,
+          {
+            symbol:"$sola"
+          },
+        )
+        .then(async (response) => {
+          let volume = response.data.volume;
+          volume_channel(volume);
+        });
         
     } catch (error) {
         console.log(error);
