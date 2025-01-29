@@ -1,0 +1,37 @@
+name: Dev CI/CD
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup k8s
+        uses: azure/setup-kubectl@v4
+
+      - name: Log in to Vultr Container Registry
+        run: docker login https://ewr.vultrcr.com/develop1 -u ${{ secrets.VULTR_REGISTRY_USER }} -p ${{ secrets.VULTR_REGISTRY_PASSWORD }}
+
+      - name: Build, tag, and push image to Registry
+        id: build-image
+        env:
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          docker buildx build --platform linux/amd64 \
+                              --tag ewr.vultrcr.com/develop1/sola-price-bot:latest \
+                              --push .
+          echo "image=ewr.vultrcr.com/develop1/sola-price-bot:latest" >> $GITHUB_OUTPUT
+
+      - name: Restart Kubernetes Deployment (Rolling Update)
+        run: |
+          echo "${{ secrets.KUBECONFIG }}" > solaconfig.yaml
+          export KUBECONFIG=solaconfig.yaml
+          kubectl rollout restart deployment sola-price-bot-deployment -n sola-price-bot
