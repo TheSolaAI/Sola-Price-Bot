@@ -17,6 +17,16 @@ jobs:
       - name: Setup k8s
         uses: azure/setup-kubectl@v4
 
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_KEY }}
+          aws-region: us-east-1
+
+      - name: Get .env from S3
+        run: aws s3 cp s3://sola-secrets/sola-price-bot/.env .env
+
       - name: Log in to Vultr Container Registry
         run: docker login https://ewr.vultrcr.com/develop1 -u ${{ secrets.VULTR_REGISTRY_USER }} -p ${{ secrets.VULTR_REGISTRY_PASSWORD }}
 
