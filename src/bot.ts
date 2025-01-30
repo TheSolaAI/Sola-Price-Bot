@@ -117,12 +117,6 @@ function formatNumber(num:number) {
 
 export const bot = async () => {
   async function setChannels() {
-    let data_url = config.DATA_SERVICE_URL
-    if (!data_url) {
-      console.error("Data service URL not found!");
-      return;
-    }
-    
     try {
         axios.post(
           "https://graph.defined.fi/graphql",
@@ -137,17 +131,6 @@ export const bot = async () => {
           });
         const holders = findHolders();
       holders_channel(await holders);
-      
-        axios.post(
-          data_url,
-          {
-            symbol:"$sola"
-          },
-        )
-        .then(async (response) => {
-          let volume = response.data.volume;
-          volume_channel(volume);
-        });
         
     } catch (error) {
         console.log(error);
