@@ -4,6 +4,8 @@ import axios from "axios";
 import { config } from "../config";
 import { findHolders } from "./helius_gpa";
 
+//deploy
+
 export const client = new DiscordJs.Client({
   intents: [],
 });
