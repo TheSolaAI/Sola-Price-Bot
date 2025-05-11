@@ -120,15 +120,10 @@ function formatNumber(num:number) {
 export const bot = async () => {
   async function setChannels() {
     try {
-        axios.post(
-          "https://graph.defined.fi/graphql",
-          {
-            query: price_query
-          },{
-            headers: headers,
-          }
-        ).then(async (response) => {
-            let price = response.data.data.getTokenPrices[0]["priceUsd"];
+      fetch('https://api.dexscreener.com/latest/dex/search?q=B5UsiUYcTD3PcQa8r2uXcVgRmDL8jUYuXPiYjrY7pump%2FSOL')
+        .then(async (response) => {
+          const data:any = await response.json();
+            let price = data['pairs'][0]["priceUsd"];
             mcap_channel(price * 1000000000);
           });
         const holders = findHolders();
